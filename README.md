@@ -5,8 +5,9 @@
 ## Materi teori sebelum praktikum
 
 - [Pertemuan 05: Docker Core](slides/Teori_Pertemuan_05.pptx)
+- [Kode contoh teori Node.js 24: satu stage dan multi-stage](examples/theory-node/README.md)
 
-Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab.
+Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Revisi 8 Oktober 2026 memeriksa instruksi Dockerfile, cache, secrets, digest, dan perilaku healthcheck. Contoh FastAPI serta kedua contoh Node.js telah dibangun dan diuji lokal.
 
 <!-- lecture-materials:end -->
 
@@ -60,3 +61,13 @@ docker rm -f cloudlab-api
 **Git opsional:** commit kode dan Dockerfile. Untuk push ke Docker Hub, buat akun dan jalankan `docker tag cloud-notes-api:lab05 NAMA_AKUN/cloud-notes-api:lab05`, `docker login`, `docker push NAMA_AKUN/cloud-notes-api:lab05`. Simpan kode di GitHub; push image ke registry hanya bila dipakai untuk menjalankan proyek.
 
 Rujukan: [Dockerfile reference](https://docs.docker.com/reference/dockerfile/), [multi-stage builds](https://docs.docker.com/build/building/multi-stage/).
+
+## Bukti pengujian kelas 8 Oktober 2026
+
+FastAPI berhasil dibangun dan diuji: `/health`, `/runtime`, dan `/docs` 200; POST `/notes` 201; input kosong 422; ID tidak ditemukan 404. Proses memakai UID 10001. Sesudah `docker restart`, catatan memori kosong kembali. Kedua contoh Node.js juga berhasil dibangun dan diuji; contoh multi-stage memakai UID 1000.
+
+Screenshot berikut diambil langsung dari Swagger di Chrome. Uji ini memakai port host **18005** untuk menghindari benturan; port container tetap **8000**. Langkah utama modul memakai host **8000**. Di `/docs`, buka GET `/health`, klik **Try it out**, lalu **Execute**.
+
+![Swagger menampilkan command curl dan respons HTTP 200](screenshots/teori05_swagger_health_detail_20261008.jpg)
+
+Perintah yang setara pada Bash: `curl -i http://127.0.0.1:18005/health`; pada Windows: `curl.exe -i http://127.0.0.1:18005/health`. `-i` menampilkan header dan body. HTTP 200 dengan `status: ok` menunjukkan endpoint API dapat diakses; ini belum memeriksa database. Uji membutuhkan container berjalan pada mapping port tersebut.

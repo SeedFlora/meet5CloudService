@@ -57,6 +57,6 @@ docker rm -f cloudlab-api
 - `USER appuser` mencegah proses aplikasi berjalan sebagai root.
 - Tag `lab05` memberi versi yang dapat disebut jelas saat demo.
 
-**Git opsional:** commit kode dan Dockerfile. Untuk push ke Docker Hub, buat akun dan jalankan `docker tag cloud-notes-api:lab05 NAMA_AKUN/cloud-notes-api:lab05`, `docker login`, `docker push NAMA_AKUN/cloud-notes-api:lab05`. Jangan push image ke registry bila hanya perlu GitHub untuk penilaian.
+**Git opsional:** commit kode dan Dockerfile. Untuk push ke Docker Hub, buat akun dan jalankan `docker tag cloud-notes-api:lab05 NAMA_AKUN/cloud-notes-api:lab05`, `docker login`, `docker push NAMA_AKUN/cloud-notes-api:lab05`. Simpan kode di GitHub; push image ke registry hanya bila dipakai untuk menjalankan proyek.
 
 Rujukan: [Dockerfile reference](https://docs.docker.com/reference/dockerfile/), [multi-stage builds](https://docs.docker.com/build/building/multi-stage/).

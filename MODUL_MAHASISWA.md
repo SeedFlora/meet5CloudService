@@ -12,6 +12,10 @@ Anda dapat menjelaskan tiap tahap [`Dockerfile`](Dockerfile), membangun image be
 
 Pastikan Docker Engine berjalan, port host **8000** kosong, dan terminal berada di root repo Lab 05. Di PowerShell, Bash, atau WSL:
 
+![Versi Docker dan instruksi penting dalam Dockerfile Lab 05](screenshots/lab05_dockerfile_persiapan.png)
+
+*Perintah: `docker version --format '{{.Server.Version}}'` dan PowerShell `Select-String -Path Dockerfile -Pattern '^(FROM|RUN|COPY|USER|EXPOSE|CMD)'`. Fungsi: memastikan Engine aktif dan membaca tahap build/runtime sebelum build. Cara kerja: pencarian memilih instruksi Dockerfile; `FROM` membuat tahap, `RUN` memasang dependensi, `USER` memilih proses non-root, `CMD` menjalankan API. Baca hasil: dua `FROM`, `USER appuser`, dan port 8000. Ini render output command aktual.*
+
 ```bash
 docker version
 docker build -t cloud-notes-api:lab05 .
@@ -104,6 +108,12 @@ git diff --cached --check
 git commit -m "lab05: build dan uji Cloud Notes API"
 git push
 ```
+
+![Repo template Lab 05 terbit dan commit lokal sama dengan GitHub](screenshots/lab05_git_terbit.png)
+
+*SHA pada gambar adalah snapshot saat uji. Setelah modul diperbarui, jalankan ulang perintah untuk memeriksa commit terbaru.*
+
+*Perintah: `git remote -v`, `git status --short`, `git log -1 --oneline`, `git rev-parse HEAD`, dan `git ls-remote origin refs/heads/main`. Fungsi: memeriksa tujuan serta hasil push kode. Cara kerja: Git membandingkan SHA commit lokal dengan SHA `main` remote. Baca hasil: `Sama: True` untuk repo pengajar; mahasiswa mengulanginya pada repo pribadi. Ini render output command aktual.*
 
 Jika belum ada folder bukti, hilangkan argumen itu dari `git add`. Pastikan staged tidak berisi `.env`, kredensial, atau hasil build. Jika push pertama belum punya upstream, jalankan `git push -u origin main`.
 

@@ -79,6 +79,16 @@ Hasil tepat **0/0** sebelum POST dan **2/11** setelahnya. Kunci ini diuji pada i
 
 ## Screenshot, command, fungsi, dan cara membaca
 
+![Dockerfile dan prasyarat Docker Lab 05](screenshots/lab05_dockerfile_persiapan.png)
+
+**Perintah:** `docker version --format '{{.Server.Version}}'` dan `Select-String -Path Dockerfile -Pattern '^(FROM|RUN|COPY|USER|EXPOSE|CMD)'`. **Fungsi:** membuktikan Engine tersedia dan mengaitkan instruksi resep dengan dua tahap image. **Cara kerja:** `RUN` saat build; `USER` dan `CMD` menetapkan proses runtime. **Baca:** dua `FROM`, `USER appuser`, `EXPOSE 8000`. Ini render output command aktual.
+
+![Repo Lab 05 terbit di GitHub](screenshots/lab05_git_terbit.png)
+
+*SHA pada gambar adalah snapshot saat uji. Setelah modul diperbarui, jalankan ulang perintah untuk memeriksa commit terbaru.*
+
+**Perintah:** `git remote -v`, `git status --short`, `git log -1`, `git rev-parse HEAD`, `git ls-remote origin refs/heads/main`. **Fungsi:** memeriksa URL repo dan commit yang sudah terbit. **Cara kerja:** SHA lokal dibandingkan dengan SHA remote. **Baca:** `Sama: True` hanya membuktikan repo template pengajar; mahasiswa harus mengulang pada repo sendiri. Ini render output command aktual.
+
 ![Image dan user container pada uji awal](screenshots/lab05_build.png)
 
 **Perintah:** `docker build`, `docker ps`, `docker exec cloudlab-api id`, `docker image inspect`. **Fungsi:** membuktikan image ada dan proses tidak root. **Cara kerja:** Docker membangun lapisan lalu menjalankan Uvicorn dalam container. **Baca:** tag image, UID 10001, pemetaan 8000:8000.

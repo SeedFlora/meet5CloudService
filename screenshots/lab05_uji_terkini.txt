@@ -1,0 +1,10 @@
+Lab 05 - Docker API aktual
+docker build cloud-notes-api:lab05 -> sukses
+docker run -p 127.0.0.1:8000:8000 -> cloudlab-api aktif
+GET /health -> HTTP 200 {'status': 'ok', 'service': 'cloud-notes-api'}
+GET /runtime -> HTTP 200 {'environment': 'classroom', 'storage': 'memory'}
+POST /notes -> HTTP 201 id=1 title=Docker
+GET /notes -> HTTP 200 count=1
+POST /notes title="   " -> HTTP 422
+GET /notes/999999 -> HTTP 404
+GET /notes setelah container dibuat ulang -> HTTP 200 []

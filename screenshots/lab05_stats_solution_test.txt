@@ -1,0 +1,5 @@
+/stats awal: (200, {'note_count': 0, 'longest_title_chars': 0})
+POST pertama: HTTP 201
+POST kedua: HTTP 201
+/stats sesudah dua POST: (200, {'note_count': 2, 'longest_title_chars': 11})
+judul spasi saja: HTTP 422

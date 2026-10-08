@@ -23,6 +23,78 @@ Kode Compose adalah contoh terpisah. Dockerfile/API memori Lab 05 tetap tersedia
 
 **Jalur online:** buka repo [meet5CloudService](https://github.com/SeedFlora/meet5CloudService), pilih Code → Codespaces, gunakan konfigurasi repo dan mesin 2 core. Tunggu terminal Linux serta daemon Docker siap. Laptop hanya memerlukan browser, akun GitHub, internet, dan kuota; Docker berjalan di mesin cloud. Waktu provisioning/unduhan di luar waktu show kelas. Jangan memakai editor ringan `github.dev` sebagai pengganti Codespaces.
 
+### 2.1 Mulai dari komputer kampus atau laptop yang belum memiliki repo
+
+**Prasyarat komputer kampus:** Git dan Docker Desktop/Engine sudah dipasang serta diizinkan oleh pengelola laboratorium. Buka Docker Desktop dan tunggu Engine siap. Mahasiswa menyiapkan salinan kode di folder milik pengguna sendiri, misalnya **Documents/CloudServices**. Langkah ini tidak memerlukan hak admin mahasiswa.
+
+Jalankan empat pemeriksaan berikut; command sama di PowerShell, Git Bash, atau terminal Linux:
+
+```bash
+git --version
+docker version
+docker compose version
+docker info --format '{{.OSType}}'
+```
+
+**Baca hasil:** Git menampilkan versinya; `docker version` harus menampilkan bagian **Client dan Server**. Client tersedia tetapi Server gagal berarti Engine belum siap. `docker compose version` memastikan Compose tersedia; `docker info` di atas harus menghasilkan **linux**, karena image demo memakai Linux containers. Jika `git` atau `docker` tidak ditemukan, atau Engine tidak dapat dimulai, minta pengelola lab menyiapkan komputer sebelum melanjutkan.
+
+#### Pilihan A: PowerShell pada Windows
+
+Jalankan **sekali untuk salinan baru**. `MyDocuments` mengikuti lokasi Documents pengguna, termasuk jika kampus mengalihkannya ke OneDrive.
+
+```powershell
+$labWorkspace = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'CloudServices'
+New-Item -ItemType Directory -Path $labWorkspace -Force | Out-Null
+Set-Location -LiteralPath $labWorkspace
+git clone https://github.com/SeedFlora/meet5CloudService.git
+Set-Location -LiteralPath meet5CloudService
+Get-Location
+git remote -v
+Test-Path -LiteralPath examples/compose-notes/compose.yaml
+Test-Path -LiteralPath examples/compose-notes/.env.example
+```
+
+**Fungsi dan cara kerja:** dua baris pertama menyiapkan folder yang dapat ditulis oleh pengguna. `git clone` mengunduh isi repo sekaligus riwayat Git dan remote `origin`. `Set-Location meet5CloudService` masuk ke **root repo**, bukan folder contoh Compose. `Get-Location` menunjukkan lokasi aktif, `git remote -v` harus menunjuk `SeedFlora/meet5CloudService`, dan dua `Test-Path` harus menghasilkan **True, True**. Salinan ini dipakai untuk menjalankan demo; mahasiswa tidak perlu mengirim perubahan ke repo pengajar.
+
+#### Pilihan B: Git Bash pada Windows atau Bash pada Linux/WSL
+
+```bash
+mkdir -p "$HOME/Documents/CloudServices"
+cd "$HOME/Documents/CloudServices"
+git clone https://github.com/SeedFlora/meet5CloudService.git
+cd meet5CloudService
+pwd
+git remote -v
+ls -l examples/compose-notes/compose.yaml examples/compose-notes/.env.example
+```
+
+**Fungsi dan cara kerja:** `mkdir -p` membuat folder kerja pengguna jika belum ada; `cd` berpindah lokasi. `pwd` harus berakhir pada **meet5CloudService**, sedangkan `ls -l` harus menampilkan kedua file contoh. `$HOME` adalah folder pengguna terminal tersebut. Pada WSL, Documents di sini berada pada filesystem pengguna Linux; pada Git Bash, ia berada pada profil pengguna Windows. Untuk mengikuti command Bash pada bagian selanjutnya di Windows, gunakan **Git Bash** pada lokasi salinan repo yang dipilih.
+
+![GitHub menyediakan URL HTTPS untuk menyalin repo Lab 05 ke komputer kampus](screenshots/campus/01_clone_https.jpg)
+
+**Command / langkah:** buka **Code → Local → HTTPS**, salin URL, lalu jalankan `git clone https://github.com/SeedFlora/meet5CloudService.git` pada terminal di folder kerja pengguna. **Fungsi:** mengambil salinan sumber praktikum yang sama untuk seluruh kelas. **Cara kerja:** GitHub menyediakan URL HTTPS; Git mengunduh isi dan riwayat repo lalu membuat folder `meet5CloudService`. **Baca:** screenshot menunjukkan pilihan URL pada GitHub, sedangkan keberhasilan clone diperiksa di terminal melalui remote `origin` dan keberadaan `examples/compose-notes/compose.yaml` serta `.env.example`. Screenshot ini belum membuktikan container berjalan.
+
+#### Jika salinan repo sudah ada
+
+Buka terminal dari **root salinan meet5CloudService yang sudah ada**, lalu periksa:
+
+```bash
+git remote -v
+git status --short
+```
+
+Jika `origin` cocok dengan repo di atas dan `git status --short` **tidak menampilkan apa pun**, perbarui dengan:
+
+```bash
+git pull --ff-only origin main
+```
+
+**Kunci:** pull hanya dilakukan pada salinan yang bersih; jangan menimpa perubahan latihan yang belum disimpan. Jika ada perubahan, pertahankan salinan itu dan diskusikan pembaruannya bersama dosen. Jika clone melaporkan *destination path already exists*, gunakan pemeriksaan salinan yang sudah ada ini. Clone tidak perlu diulang di dalam repo. Pada Codespaces, repo sudah tersedia setelah provisioning, sehingga langsung lanjut dari root repo.
+
+**Kebutuhan internet:** clone dan build pertama memerlukan internet untuk mengambil kode, image dasar, serta dependency aplikasi. Jalur lokal berarti Docker berjalan pada komputer kampus/laptop; ini bukan jaminan seluruh persiapan bisa offline. Pengajar perlu menyiapkan image dan dependency sebelum sesi bila jaringan kelas terbatas. Docker Scout tetap memakai layanan online pada langkah scan opsional.
+
+### 2.2 Masuk folder contoh Compose
+
 **Jalur lokal:** gunakan Docker Desktop/Engine yang sudah berjalan. Port **13005** dan **13006** harus kosong. Untuk command Bash, gunakan terminal Linux/WSL atau Git Bash; perintah Docker Compose juga dapat dijalankan di PowerShell.
 
 Dari root repo:
@@ -34,6 +106,8 @@ cd examples/compose-notes
 ```
 
 Seluruh command Compose berikut dijalankan dari folder **`examples/compose-notes`**, supaya Compose membaca `compose.yaml` dan `.env` yang benar.
+
+Padanan pindah folder pada PowerShell: `Set-Location -LiteralPath examples/compose-notes`. Sebelum melanjutkan, `Get-Location` atau `pwd` harus berakhir pada **meet5CloudService/examples/compose-notes**. Pemeriksaan file pada 2.1 dilakukan dari root repo; salin `.env` pada bagian berikut setelah berada di folder contoh ini.
 
 ### Salin konfigurasi khusus kelas
 

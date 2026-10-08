@@ -23,6 +23,23 @@ Repo template: [SeedFlora/meet5CloudService](https://github.com/SeedFlora/meet5C
 
 **Capaian:** menulis Dockerfile multi-stage, mengecilkan build context dengan `.dockerignore`, memberi tag image, menjalankan image dengan environment variable, dan menguji REST API. Data lab ini sementara tersimpan di memori; Lab 06 menambahkan database.
 
+## Mulai di komputer kampus Windows
+
+Buka Docker Desktop dan tunggu **Linux Engine** siap. Pada PowerShell, periksa `git --version`, `docker version` (Client + Server), dan `docker info --format '{{.OSType}}'` (linux). Untuk PC yang belum mempunyai repo:
+
+```powershell
+$campusFolder = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'CloudServices'
+New-Item -ItemType Directory -Path $campusFolder -Force | Out-Null
+Set-Location -LiteralPath $campusFolder
+git clone https://github.com/SeedFlora/meet5CloudService.git
+Set-Location -LiteralPath 'meet5CloudService'
+Get-ChildItem -LiteralPath 'Dockerfile', 'requirements.txt', 'app/main.py'
+```
+
+Lanjutkan build dari folder tersebut. Jika repo sudah ada, periksa `git status --short` dan gunakan `git pull --ff-only` hanya saat bersih; [modul mulai dari PC kampus](MODUL_MAHASISWA.md#mulai-dari-komputer-kampus-windows) menjelaskan langkah, hasil, dan troubleshooting. Clone tidak memerlukan `git init`; remote ini milik pengajar, sehingga simpan perubahan lokal atau pilih [repo kelompok/pribadi](PANDUAN_GIT.md) sebelum push. Build pertama memerlukan internet. Jika instalasi/Engine dibatasi pengelola PC, gunakan demo online berikut dengan browser.
+
+Rujukan resmi: [clone repo GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository), [instalasi Docker Compose](https://docs.docker.com/compose/install/).
+
 ## Demo teori tanpa instalasi di laptop
 
 Buka repo ini, lalu **Code → Codespaces → Create codespace on main**. Gunakan mesin **2 core** dan tunggu terminal Linux siap. Docker dipasang di mesin cloud oleh konfigurasi repo; laptop hanya memerlukan browser, akun GitHub, internet, dan kuota Codespaces.

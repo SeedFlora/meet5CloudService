@@ -12,6 +12,72 @@ Anda dapat menjelaskan tiap tahap [`Dockerfile`](Dockerfile), membangun image be
 
 **Pilihan demo kelas:** [panduan online](DEMO_ONLINE.md) menjalankan API utama hanya dengan browser; [panduan Compose](COMPOSE_DEMO.md) menambahkan frontend dan PostgreSQL sebagai contoh terpisah. Keduanya latihan formatif. API utama memakai port host 8000 dan memori; default Compose memakai API 13005, frontend 13006, serta database internal `db:5432`. Screenshot Compose online memakai alternatif API **13105** dan frontend **13106** untuk menghindari proses lain pada host 13005; panduan menunjukkan perubahan `.env` dan pemilihan port yang benar. Port di dalam container tetap API 8000/web 80. Jangan menukar URL atau menganggap hasil memori pada contoh pertama sudah persisten.
 
+## Mulai dari komputer kampus Windows
+
+Bagian ini dimulai dari PC yang belum mempunyai folder Lab 05. Gunakan **PowerShell biasa** pada akun Windows Anda, dengan folder kerja yang dapat ditulis. Clone publik cukup untuk mencoba materi; latihan ini tidak mewajibkan repo pribadi atau push.
+
+### 1. Periksa Git dan Docker Desktop
+
+Buka **Docker Desktop** dari Start dan tunggu Engine siap. Lab memakai **Linux containers** untuk image Python/Nginx/PostgreSQL. Di PowerShell:
+
+```powershell
+git --version
+docker version
+docker info --format '{{.OSType}}'
+```
+
+**Fungsi/cara membaca:** Git menampilkan versinya; `docker version` harus menampilkan **Client dan Server**; command terakhir menghasilkan **linux**. Client saja belum membuktikan Engine berjalan. Python tidak perlu dipasang pada PC karena runtime/dependency API dipasang dalam image.
+
+PC kampus sebaiknya sudah disiapkan pengelola dengan Git, Docker Desktop, backend Linux, dan akses yang diperlukan. Jika command tidak dikenali, Engine tidak dapat dimulai, atau instalasi/virtualisasi dibatasi kebijakan kampus, minta bantuan pengelola lab dan gunakan [jalur Codespaces di browser](DEMO_ONLINE.md) untuk kelas. Ikuti kebijakan kampus untuk instalasi atau perubahan sistem. [Docker Desktop Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
+
+### 2. Buat folder kerja dan clone materi
+
+Pada GitHub, buka repo pengajar lalu **Code → Local → HTTPS**. Jika folder `meet5CloudService` sudah ada pada PC, gunakan bagian **repo sudah ada** di bawah. Untuk clone pertama:
+
+```powershell
+$campusFolder = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'CloudServices'
+New-Item -ItemType Directory -Path $campusFolder -Force | Out-Null
+Set-Location -LiteralPath $campusFolder
+git clone https://github.com/SeedFlora/meet5CloudService.git
+Set-Location -LiteralPath 'meet5CloudService'
+Get-Location
+Get-ChildItem -LiteralPath 'Dockerfile', 'requirements.txt', 'app/main.py'
+git remote -v
+```
+
+**Fungsi/cara kerja:** `GetFolderPath` mengambil lokasi Documents milik akun, termasuk bila dialihkan oleh kebijakan PC; `New-Item` menyiapkan subfolder tanpa menghapus isinya. `Set-Location` memindahkan terminal. `git clone` mengunduh kode/riwayat Git dan membuat folder `meet5CloudService` dengan remote `origin`. `Get-ChildItem` memastikan Dockerfile, dependency, dan kode API tersedia. **Checkpoint:** lokasi berakhir pada `CloudServices\meet5CloudService`, tiga berkas ditemukan, origin menuju SeedFlora/meet5CloudService. Folder itu **root repo** untuk build berikut. Jika Documents tidak dapat ditulis pada PC tertentu, gunakan folder pribadi yang diizinkan pengelola atau jalur online.
+
+![GitHub menyediakan URL HTTPS untuk clone materi Lab 05](screenshots/campus/01_clone_https.jpg)
+
+**Command / langkah:** `Code > Local > HTTPS` dan `git clone https://github.com/SeedFlora/meet5CloudService.git`. **Fungsi/cara kerja:** menu GitHub menampilkan URL sumber; git clone menyalin kode/riwayat menjadi repo lokal dengan metadata .git dan origin. **Baca:** screenshot aktual menunjukkan menu HTTPS pada repo publik pengajar; URL lengkap dicantumkan pada command agar dapat disalin. Ini screenshot GitHub, bukan bukti PowerShell di PC kampus; jalankan blok PowerShell di atas dan periksa lokasi serta tiga file pada PC Anda.
+
+Repo hasil clone sudah mempunyai metadata Git, sehingga **tidak perlu `git init`**. Remote publik ini milik pengajar; **jangan push ke repo pengajar**. Perubahan percobaan boleh tetap lokal. Jika ingin menyimpan kontribusi proyek kelompok, ikuti [panduan repo pribadi/kelompok](PANDUAN_GIT.md) dan periksa origin milik Anda sebelum push. [Cara kerja clone](https://git-scm.com/docs/git-clone)
+
+### 3. Jika repo sudah ada di PC
+
+Masuk folder yang sama, periksa remote dan perubahan dahulu:
+
+```powershell
+$campusFolder = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'CloudServices'
+Set-Location -LiteralPath (Join-Path $campusFolder 'meet5CloudService')
+git remote -v
+git status --short
+```
+
+**Hanya jika `git status --short` kosong**, perbarui dengan:
+
+```powershell
+git pull --ff-only
+```
+
+`--ff-only` menerima pembaruan fast-forward; bila history berbeda, command berhenti untuk diperiksa. Jika status menampilkan perubahan, simpan dan tinjau pekerjaan Anda dahulu atau gunakan folder baru; jangan overwrite, `reset --hard`, atau membersihkan file untuk memaksa update. Pada PC bersama, pastikan folder/repo milik sesi Anda.
+
+### 4. Lokal membutuhkan internet pada persiapan pertama
+
+Clone mengunduh kode dari GitHub; build awal menarik base image dan mengunduh dependency. Jadi **jalur lokal bukan sepenuhnya offline**. Setelah image tersedia, API utama dapat dicoba melalui localhost tanpa internet; rebuild/pull dependency baru serta Docker Scout tetap memerlukan koneksi sesuai kebutuhannya. Lanjutkan bagian **Persiapan dan build** dari root repo yang baru dibuka.
+
+Rujukan persiapan: [clone repo melalui HTTPS di GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) dan [instalasi Docker Compose](https://docs.docker.com/compose/install/). Gunakan konfigurasi PC yang disiapkan kampus; jalur Compose lengkap ada di [panduan tiga layanan](COMPOSE_DEMO.md).
+
 ## Persiapan dan build
 
 Pastikan Docker Engine berjalan, port host **8000** kosong, dan terminal berada di root repo Lab 05. Di PowerShell, Bash, atau WSL:

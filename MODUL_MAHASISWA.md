@@ -10,6 +10,8 @@ Anda dapat menjelaskan tiap tahap [`Dockerfile`](Dockerfile), membangun image be
 
 **Teori singkat.** Dockerfile adalah resep build image. Tahap `builder` memasang dependensi Python ke virtual environment; tahap `runtime` menyalin hanya hasil yang diperlukan serta kode aplikasi. [`.dockerignore`](.dockerignore) mengurangi berkas yang masuk ke build context. `RUN` dieksekusi saat build; `CMD` memberi perintah default saat container mulai, sedangkan `ENTRYPOINT` dapat menetapkan executable utama. `ENV` pada Dockerfile berbeda dari `-e` pada `docker run`: `-e` memasok nilai saat container dijalankan. Data API ini disimpan di memori proses, belum di volume/database.
 
+**Pilihan demo kelas:** [panduan online](DEMO_ONLINE.md) menjalankan API utama hanya dengan browser; [panduan Compose](COMPOSE_DEMO.md) menambahkan frontend dan PostgreSQL sebagai contoh terpisah. Keduanya latihan formatif. API utama memakai port host 8000 dan memori; default Compose memakai API 13005, frontend 13006, serta database internal `db:5432`. Screenshot Compose online memakai alternatif API **13105** dan frontend **13106** untuk menghindari proses lain pada host 13005; panduan menunjukkan perubahan `.env` dan pemilihan port yang benar. Port di dalam container tetap API 8000/web 80. Jangan menukar URL atau menganggap hasil memori pada contoh pertama sudah persisten.
+
 ## Persiapan dan build
 
 Pastikan Docker Engine berjalan, port host **8000** kosong, dan terminal berada di root repo Lab 05. Di PowerShell, Bash, atau WSL:
@@ -90,11 +92,13 @@ PowerShell: `Invoke-RestMethod http://127.0.0.1:8000/notes`; Bash: `curl -fsS ht
 
 **Tantangan kode mandiri:** tambahkan endpoint `GET /stats` pada salinan Anda di `app/main.py`. Kembalikan `note_count` dan `longest_title_chars`; saat belum ada catatan keduanya bernilai 0. Gunakan lock yang sama dengan operasi catatan, uji sebelum dan sesudah membuat dua catatan, lalu build ulang image dengan tag berbeda. Tantangan ini latihan tambahan; endpoint inti di atas harus berhasil lebih dahulu.
 
-## Analisis, laporan, dan Git
+## Diskusi, catatan opsional, dan Git
 
-Jawab tanpa menyalin contoh: (1) bagian mana dari Dockerfile berjalan saat build dan bagian mana saat run; apa beda `CMD` dan `ENTRYPOINT` dalam konteks ini; (2) mengapa `.dockerignore` memuat `.env`; (3) apa arti port kiri/kanan pada `127.0.0.1:8000:8000`; (4) apa hubungan validasi `Field(min_length=1)` dengan HTTP 422; (5) apa kelemahan menyimpan catatan hanya di memori.
+Diskusikan bersama dosen: (1) bagian mana dari Dockerfile berjalan saat build dan bagian mana saat run; apa beda `CMD` dan `ENTRYPOINT` dalam konteks ini; (2) mengapa `.dockerignore` memuat `.env`; (3) apa arti port kiri/kanan pada `127.0.0.1:8000:8000`; (4) apa hubungan validasi `Field(min_length=1)` dengan HTTP 422; (5) apa kelemahan menyimpan catatan hanya di memori.
 
-Dari root repo, salin [template laporan](hasil/TEMPLATE_LAPORAN.md) menjadi `hasil/lab05.md`: PowerShell `Copy-Item hasil/TEMPLATE_LAPORAN.md hasil/lab05.md`; Bash `cp hasil/TEMPLATE_LAPORAN.md hasil/lab05.md`. Isi hasil nyata, perintah, jawaban, dan screenshot Anda di `hasil/bukti/`. Jangan memakai screenshot modul sebagai bukti pribadi.
+Pertanyaan tersebut dipakai untuk diskusi kelas, bukan penyerahan atau penilaian terpisah; kuncinya tersedia pada bagian akhir. Catatan dan Git di bawah bersifat opsional sebagai referensi proses proyek kelompok.
+
+Jika ingin menyimpan catatan proses proyek, dari root repo salin [template laporan](hasil/TEMPLATE_LAPORAN.md) menjadi `hasil/lab05.md`: PowerShell `Copy-Item hasil/TEMPLATE_LAPORAN.md hasil/lab05.md`; Bash `cp hasil/TEMPLATE_LAPORAN.md hasil/lab05.md`. Catat hasil nyata, perintah, jawaban, dan screenshot Anda di `hasil/bukti/`. Catatan ini opsional; jangan memakai screenshot modul sebagai bukti pribadi.
 
 ```bash
 docker rm -f cloudlab-api
@@ -199,3 +203,157 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:8000/notes -H 
 3. Pada `127.0.0.1:8000:8000`, bagian kiri adalah alamat dan port laptop; bagian kanan adalah port aplikasi dalam container. Loopback membatasi akses dari host lain.
 4. `Field(min_length=1)` menolak string kosong. Validator tambahan `reject_blank_text` memangkas spasi dan menolak teks yang hanya berisi spasi; FastAPI memberi 422 karena payload gagal validasi.
 5. `_notes` hidup di memori proses. Mengganti container membuat memori baru dan daftar kosong. Lab 06 memindahkan sumber data ke PostgreSQL dalam named volume.
+
+## Pemeriksaan image dengan Docker Scout, opsional 5–10 menit
+
+**Kasus kerja harian:** tim akan merilis API catatan. Build dan respons HTTP berhasil, tetapi tim masih perlu mengetahui paket apa yang ada dalam image, advisory yang terkait, serta pilihan pembaruan. Docker Scout menyusun atau membaca SBOM—daftar komponen software dan versinya—kemudian mencocokkannya dengan data kerentanan. Ini pelengkap pengujian fungsi, bukan pengganti tes API. [Konsep Scout](https://docs.docker.com/scout/)
+
+Perumpamaan: resep adalah Dockerfile, paket bahan software adalah image, daftar bahan dan nomor batch adalah SBOM, dan Scout mencocokkannya dengan daftar recall. CVE bukan tanggal kedaluwarsa fisik; hasil scan harus dibaca bersama versi dan konteks penggunaan.
+
+### 1. Siapkan lingkungan yang sesuai
+
+Jalur kelas memakai **terminal Linux Codespaces** dan image `cloud-notes-api:theory-online`, yang dibuild oleh `bash scripts/demo-online.sh build`. Laptop tetap cukup browser. Docker Desktop sudah menyertakan Scout; Docker Engine di cloud belum tentu membawa plugin tersebut. Akun/login Docker dan koneksi ke layanan Scout disiapkan sebelum presentasi. Jangan menampilkan password, token, device code aktif, atau isi konfigurasi Docker. [Instalasi Scout](https://docs.docker.com/scout/install/), [quickstart](https://docs.docker.com/scout/quickstart/)
+
+```bash
+bash scripts/scout-demo.sh install
+bash scripts/scout-demo.sh check
+```
+
+Script memasang binary **standalone Scout 1.26.0** secara eksplisit dan memverifikasi checksum di Linux; instalasinya berada pada cache pengguna khusus demo. Jika instalasi valid sudah ada, binary tersebut diperiksa dan dipakai ulang. Helper memakai binary ini, bukan plugin Docker CLI lain yang mungkin sudah terpasang. `check` memeriksa binary, daemon, dan image lokal, **bukan bukti login atau akses layanan**. Script tidak melakukan login, push, pengaktifan repository monitoring, atau perubahan container. Waktu unduhan dan login tidak termasuk slot demo 5–10 menit.
+
+**Jika Anda menggunakan Docker Desktop lokal:** setelah image `cloud-notes-api:lab05` dibuild, gunakan `docker scout version`, lalu command CLI langsung pada contoh di bawah dengan target `local://cloud-notes-api:lab05`. Script installer kelas ditujukan untuk Linux, bukan PowerShell Windows. [Referensi Scout CLI](https://docs.docker.com/reference/cli/docker/scout/)
+
+### 2. Baca ringkasan, lalu satu temuan nyata
+
+```bash
+bash scripts/scout-demo.sh quickview
+bash scripts/scout-demo.sh cves
+bash scripts/scout-demo.sh recommendations
+```
+
+| Command | Tujuan | Cara membaca |
+|---|---|---|
+| `quickview` | Ringkasan kerentanan image dan base image | Pastikan target benar; baca C/H/M/L/U sebagai critical/high/medium/low/unspecified. Angka bergantung image dan advisory saat scan. |
+| `cves` | Rincian temuan menurut paket | Pilih satu temuan: nama paket, versi terpasang, CVE, severity, affected range, dan fixed version bila tercatat. |
+| `recommendations` | Kandidat pembaruan base image | Baca saran dan dampaknya. Ini belum mengubah Dockerfile/image; tidak tersedia saran juga merupakan hasil yang mungkin. |
+
+Pada Docker Desktop lokal, padanan CLI:
+
+```bash
+docker scout quickview local://cloud-notes-api:lab05
+docker scout cves local://cloud-notes-api:lab05
+docker scout recommendations local://cloud-notes-api:lab05
+```
+
+Target `local://` menggunakan image store lokal tanpa fallback mencari target di registry; kegiatan Scout tetap dapat membutuhkan jaringan dan autentikasi. Pada plugin Desktop, `docker scout cves --details local://cloud-notes-api:lab05` memberi rincian tambahan; jangan menambahkan flag tersebut pada helper yang hanya menerima satu nama action. [Quickview](https://docs.docker.com/reference/cli/docker/scout/quickview/), [CVEs](https://docs.docker.com/reference/cli/docker/scout/cves/), [recommendations](https://docs.docker.com/reference/cli/docker/scout/recommendations/)
+
+<!-- scout-screenshots:start -->
+
+**Rekaman baseline:** screenshot Scout berikut merekam image sebelum pembaruan dependency kelas, digest `c9751e34cb88`. Tag dapat digunakan ulang; digest mewakili isi image. Source repo terbaru dibuild dan dianalisis sesuai hasil aktual, sehingga total peserta dapat berbeda. Baseline membantu memahami alasan perbaikan dan perbandingan sesudahnya.
+
+![Instalasi Scout dan check teknis pada mesin Codespaces](screenshots/scout/01_install_check.jpg)
+
+*Command: `bash scripts/scout-demo.sh install`, lalu `bash scripts/scout-demo.sh check`, dari root repo. Fungsi: menyiapkan binary standalone v1.26.0 dan memeriksa daemon/image lokal. Baca hasil aktual: Linux/amd64, image ID berawalan c9751e34cb88, serta pesan akses layanan belum diuji. Check bukan scan CVE atau bukti autentikasi.*
+
+![Quickview berhasil menganalisis image API utama Lab 05](screenshots/scout/02_quickview.jpg)
+
+*Command: `bash scripts/scout-demo.sh quickview`. Fungsi: menghubungkan identitas image dengan ringkasan advisory. Snapshot 8 Oktober 2026 memakai local://cloud-notes-api:theory-online, digest c9751e34cb88, 136 paket diindeks, dan target 0C/4H/9M/28L. Base python:3.12-slim tampil 0C/1H/6M/27L. Angka bukan target kelulusan dan dapat berubah; tidak ada critical bukan berarti tidak ada risiko.*
+
+Output aktual masih menampilkan **Health score 22%** dan **Policy status FAILED**. Itu bukan persentase keamanan atau nilai praktikum. Fitur health scores dan sejumlah fitur dashboard tercantum pada [pengumuman retirement Docker](https://docs.docker.com/retired/); kelas membaca paket/CVE/fix dan keputusan teknis, bukan memakai skor tersebut sebagai syarat rilis. Keberhasilan scan pada Codespace uji ini tidak menjamin akses tanpa autentikasi pada lingkungan lain.
+
+![Rincian CVE dan ringkasan 41 temuan pada 15 paket](screenshots/scout/03_cves.jpg)
+
+*Command: `bash scripts/scout-demo.sh cves`. Fungsi: membaca paket, versi, advisory, severity, affected range, dan fixed version. Pada cuplikan aktual: shadow 1:4.17.4-2 dengan LOW CVE-2007-5686, apt 3.0.3 dengan LOW CVE-2011-3374, keduanya not fixed. Ringkasan 0C/4H/9M/28L = 41 temuan pada 15 paket. Kunci: not fixed tidak boleh diganti dengan versi perbaikan tebakan; nilai konteks dan mitigasi, lalu pilih update yang terbukti sesuai. Potongan akhir ini tidak menampilkan empat high pada bagian lain laporan.*
+
+![Paket high memiliki jalur perbaikan dependency dan OS yang berbeda](screenshots/scout/03b_high_packages.jpg)
+
+*Command rekaman: `grep -B 3 -A 8 'HIGH CVE' hasil/scout/*/cves.txt`, membaca hasil tersimpan. Bila ada banyak laporan, pilih file baseline yang sesuai metadata/digest agar tidak mencampur image. Baca output: temuan Starlette memiliki fixed version berbeda menurut advisory (1.3.1, 1.1.0, 0.49.1); zlib menampilkan high CVE-2026-85091/not fixed. Kunci: update dependency harus kompatibel dengan constraint FastAPI, lalu build image baru, tes API, dan rescan. Paket OS memerlukan review base/OS/mitigasi. Severity tidak membuktikan seluruh route aplikasi dapat dieksploitasi; periksa advisory dan konteks.*
+
+![Versi Starlette terpasang dibandingkan dengan rentang terdampak dan fixed version](screenshots/scout/03c_starlette_example.jpg)
+
+*Command rekaman: `grep -B 1 -A 14 'pkg:pypi/starlette@' hasil/scout/20261008T033326Z-IJU7GH/cves.txt`, membaca satu laporan baseline eksplisit; path mesin peserta mengikuti hasil helper. Baca: installed 0.46.2, HIGH CVE-2026-54283 affected >=0.4.1/<1.3.1 fixed 1.3.1; HIGH CVE-2026-48818 affected <1.1.0 fixed 1.1.0. Kunci: versi terpasang berada dalam rentang itu; memilih 1.1.0 belum memenuhi fix advisory pertama. Evaluasi update FastAPI/dependency yang kompatibel, verifikasi versi dalam image, tes API, lalu rescan.*
+
+**Kunci konteks:** advisory pertama memerlukan parsing form urlencoded; yang kedua StaticFiles Windows dan mengecualikan POSIX. Contoh JSON/Linux tidak memakai fitur itu. Scan paket perlu dilengkapi tinjauan kode/config; update kompatibel tetap diuji. [Advisory form](https://github.com/Kludex/starlette/security/advisories/GHSA-82w8-qh3p-5jfq), [advisory Windows](https://github.com/Kludex/starlette/security/advisories/GHSA-wqp7-x3pw-xc5r)
+
+![Rekomendasi aktual: base sudah terbaru dan tidak ada kandidat tag lain](screenshots/scout/04_recommendations.jpg)
+
+*Command: `bash scripts/scout-demo.sh recommendations`. Fungsi: meninjau opsi refresh/tag base tanpa mengubah aplikasi. Baca hasil baseline: python:3.12-slim dengan runtime 3.12.15, versi image up to date, no tag recommendations; base tetap 0C/1H/6M/27L. Kunci: tidak ada saran bukan berarti aman. Temuan dependency Starlette ditinjau melalui dependency/framework; jangan mengarang tag base baru atau mengklaim perubahan otomatis.*
+
+![Laporan baseline berhasil menulis CVEs dalam format SARIF](screenshots/scout/05_report.jpg)
+
+*Command: `bash scripts/scout-demo.sh report`. Fungsi: menyimpan ringkasan, rincian, rekomendasi, dan SARIF secara berurutan. Baca hasil aktual: 15 vulnerable packages/41 findings dan Report written to .../cves.sarif.json, lalu selesai. Kunci: SARIF adalah format data temuan; tersimpan bukan berarti paket diperbaiki. Metadata/output/exit code generated diabaikan Git, dapat dipakai review pribadi, tanpa kewajiban laporan lab baru.*
+
+<!-- scout-screenshots:end -->
+
+### 3. Kunci diskusi dan keputusan engineer
+
+1. **Build dan HTTP 200 sudah berhasil; mengapa scan?** Itu membuktikan fungsi dasar aplikasi. Scan memeriksa komposisi software terhadap advisory yang diketahui; masalah dependency belum tentu muncul pada request pengujian.
+2. **Ada severity high; langsung ganti semua versi?** Tentukan asal paket dan versi terdampaknya terlebih dahulu. Temuan dari OS/base biasanya ditangani melalui base image; temuan dependency aplikasi melalui requirements atau lockfile. Periksa ketersediaan fix, penggunaan fungsi rentan, akses jaringan, konfigurasi, dan kompatibilitas. Severity membantu prioritas, tetapi bukan satu-satunya dasar keputusan.
+3. **Apa arti fixed version kosong atau `not fixed`?** Belum ada versi perbaikan yang dicatat pada data tersebut. Temuan tetap perlu dinilai; mitigasi konfigurasi, pembatasan akses, pembaruan lain, atau penggantian komponen dapat relevan. Jangan menghapus temuan agar angka menjadi nol.
+4. **Filter critical/high kosong; apakah image bebas kerentanan?** Tidak ada temuan yang memenuhi filter pada cakupan dan waktu scan tersebut. Baca laporan lengkap; jangan menyamakan filter kosong dengan scan tanpa temuan atau jaminan keamanan.
+5. **`recommendations` memberi base baru; apa langkah berikutnya?** Periksa bahwa runtime/platform/dependency kompatibel, ubah `FROM` bila sesuai, rebuild image, buat container baru, jalankan health dan alur POST/GET/validasi, lalu scan ulang. Rebuild tidak otomatis mengganti container lama.
+6. **Bagaimana jika total CVE menjadi 0?** Artinya tidak ada kerentanan yang terdeteksi oleh data dan cakupan scan itu. Tetap periksa fungsi, secret, konfigurasi, izin, exposure jaringan, dan risiko yang belum dikenal; 0 bukan sertifikat aman.
+7. **Plugin, login, atau backend gagal; apakah hasilnya 0?** Belum ada hasil scan yang valid. Selesaikan prasyarat atau gunakan rekaman aktual yang berlabel image/digest dan waktu. Kegagalan layanan Scout berbeda dari kegagalan API.
+
+Setiap action scan menyimpan output dan exit code pada `hasil/scout/<waktu-UTC>-<acak>/`. Untuk rangkaian laporan lengkap, jalankan `bash scripts/scout-demo.sh report`. Rangkaian ini mencoba `quickview.txt`, `cves.txt`, `recommendations.txt`, lalu `cves.sarif.json` dan `cves-sarif.console.txt`; `metadata.txt` mencatat target dan status. Proses berhenti pada kegagalan pertama, jadi folder dapat berisi laporan parsial. Folder generated diabaikan Git. Laporan parsial atau gagal tidak boleh diberi label lulus; exit 0 sendiri juga tidak menyatakan bebas kerentanan. Tidak ada kewajiban mengumpulkan laporan lab baru. [Analisis Scout](https://docs.docker.com/scout/explore/analysis/)
+
+### 4. Kunci perbaikan dan bukti sesudah update
+
+Source API utama telah diperbarui ke **FastAPI 0.142.4/Uvicorn 0.54.0**; build kelas resolve **Starlette 1.7.0**. Verifikasi versi dalam image, karena pin dependency langsung tidak mengunci seluruh paket transitif. Regresi lokal API + solusi stats meluluskan **21/21 pemeriksaan**. API tetap JSON/Linux, UID 10001, dan memori; perbaikan dependency tidak menjadikannya database.
+
+Dari root repo pada terminal Linux, setelah memakai source terbaru:
+
+```bash
+bash scripts/demo-online.sh stop
+bash scripts/demo-online.sh start
+bash scripts/demo-online.sh test --restart
+docker exec cloudlab-theory-online python -c \
+  'import fastapi, starlette, uvicorn; print("VERSIONS", fastapi.__version__, starlette.__version__, uvicorn.__version__)'
+docker tag cloud-notes-api:theory-online cloud-notes-api:scout-improved
+SCOUT_IMAGE=cloud-notes-api:scout-improved bash scripts/scout-demo.sh quickview
+SCOUT_IMAGE=cloud-notes-api:scout-improved bash scripts/scout-demo.sh cves
+```
+
+**Kunci command:** stop/start membuat container demo berlabel dari source baru; catatan memori hilang. `test --restart` membuktikan fungsi HTTP serta perilaku reset; versi dibaca melalui Python dalam container. `docker tag` menambahkan nama lokal image yang sama, tidak upload. `SCOUT_IMAGE` memilih target scan; default helper tetap theory-online. Snapshot memakai host 8000; port alternatif pada wrapper harus konsisten. Pengajar menyimpan baseline sebagai scout-before sebelum rebuild; peserta tidak perlu menurunkan dependency untuk meniru baseline.
+
+![HTTP API setelah update berhasil dan versi dalam container diperiksa](screenshots/scout/06_improved_tests.jpg)
+
+*Command: test --restart, docker exec pemeriksaan versi, docker tag kandidat. Fungsi: membuktikan perubahan tetap menjalankan health/runtime/create/read/validasi/missing/docs dan memori hilang setelah restart. Baca hasil aktual: PASS, daftar [], VERSIONS 0.142.4/1.7.0/0.54.0 dalam urutan FastAPI/Starlette/Uvicorn. Field API utama environment/storage memory berbeda dari app_env/storage postgres pada Compose.*
+
+![Scan ulang tag hasil perbaikan menampilkan 0C 1H 6M 27L](screenshots/scout/07_improved_quickview.jpg)
+
+*Command: `SCOUT_IMAGE=cloud-notes-api:scout-improved bash scripts/scout-demo.sh quickview`. Fungsi: memeriksa artefak baru, digest 39d3c08210c2. Hasil aktual: 138 paket diindeks, target/base 0C/1H/6M/27L; baseline digest c9751e34cb88 berjumlah 136 paket dengan 0C/4H/9M/28L. Angka ini snapshot 8 Oktober 2026. Legacy health 67% bukan persentase keamanan/nilai kelas.*
+
+**Kunci keputusan akhir:** pembaruan menurunkan temuan dan tes fungsi tetap lulus, tetapi satu high masih perlu review advisory/fix/konteks/mitigasi. Jumlah paket yang naik tidak otomatis menaikkan risiko; baca paket/versi dan hasil rinci. Tetap periksa konfigurasi, secret, akses, dan risiko yang belum terdeteksi. [Alur lengkap beserta perbandingan](DEMO_ONLINE.md#115-perbaikan-yang-dijalankan-update--tes--scan-ulang) menjelaskan versi, tag, dan batas bukti; bukan tugas tambahan.
+
+<!-- scout-improved-details:start -->
+
+![Satu high tersisa adalah zlib OS dengan not fixed](screenshots/scout/08_remaining_high.jpg)
+
+*Command: `SCOUT_IMAGE=cloud-notes-api:scout-improved bash scripts/scout-demo.sh cves > /tmp/cloudlab05-scout-improved-cves.txt`, dilanjutkan `grep -B 3 -A 12 'HIGH CVE' ...` dan `tail -n 8 ...` dengan && seperti blok lengkap pada [panduan online](DEMO_ONLINE.md#screenshot-scout-8-temuan-high-yang-masih-tersisa). Fungsi: baca rincian residual dari scan target yang benar. Hasil: zlib Debian 1:1.3.dfsg+really1.3.1-1, HIGH CVE-2026-85091, affected >0, not fixed. Tiga high Starlette baseline telah berkurang; dependency Python update tidak memperbaiki OS otomatis.*
+
+**Kunci residual risk:** catat digest/tanggal/advisory serta konteks penggunaan, review catatan distro/upstream dan mitigasi, lalu rencanakan follow-up. Versi Debian mempunyai epoch/revisi; jangan membandingkan string itu secara naif dengan versi upstream atau menebak versi fix. [Tracker Debian](https://security-tracker.debian.org/tracker/CVE-2026-85091) masih mencatat unfixed pada tinjauan ini. Hasil 0C/1H/6M/27L serta tes fungsi PASS tetap perlu keputusan risiko yang sesuai untuk rilis kerja; demo kelas menggunakan data dummy.
+
+<!-- scout-improved-details:end -->
+
+## Jembatan ke aplikasi tiga layanan
+
+Ikuti [demo Compose lengkap](COMPOSE_DEMO.md) untuk melihat frontend mengirim request ke FastAPI dan FastAPI menyimpan catatan pada PostgreSQL. Panduan mencakup command config/build/run/status/logs, web, pengujian HTTP, pembuktian persistensi, cleanup yang mempertahankan volume, serta kunci semua pertanyaan diskusi. Ini contoh terpisah menuju Lab 06; starter API memori dan kunci `/stats` di atas tetap menggunakan perilaku memori.
+
+Setelah tiga service sehat, jalankan `bash scripts/smoke.sh` dari **examples/compose-notes**. Python pemeriksa berjalan di container API dan menguji URL internal web/proxy. Sembilan pemeriksaan mencakup GET 200, POST 201, judul kosong 422, ID tidak ditemukan 404, serta DELETE 204 untuk catatan sementara yang baru dibuat script. Kunci: 422/404 dapat menjadi PASS ketika sengaja diharapkan; `finally` mencoba membersihkan hanya ID hasil POST sendiri. Catatan dosen tetap tersedia untuk bukti persistensi. [Bagian smoke script](COMPOSE_DEMO.md#62-ulangi-pemeriksaan-dengan-smoke-script) memuat tabel lengkap, cara membaca error, dan screenshot aktual 9/9 PASS; ini latihan bersama, bukan tugas tambahan.
+
+![Frontend tiga layanan pada demo Compose online](screenshots/compose/04_web.jpg)
+
+*Langkah: dari `examples/compose-notes`, jalankan `docker compose up -d --build --wait`, lalu buka frontend melalui URL Ports. Default web 13006/API 13005; screenshot online memakai web 13106/API 13105. Frontend relatif `/api/*` diteruskan Nginx ke backend dan PostgreSQL; tanda terhubung harus dilengkapi tes HTTP serta simpan/baca.*
+
+![Catatan handover berhasil dibuat dari frontend Compose](screenshots/compose/05_note_saved.jpg)
+
+*Langkah: isi judul/isi, lalu klik Simpan ke database. Screenshot aktual memakai data dummy Handover: layanan checkout pulih. Backend menyimpan melalui POST lalu frontend membaca daftar kembali. Panduan Compose melanjutkan ke pembuktian SQL/persistensi dan cleanup, bukan menganggap tampilan UI sebagai satu-satunya bukti.*
+
+## Tutup lingkungan online setelah semua percobaan
+
+Dari folder `examples/compose-notes`, `docker compose down` menghentikan project tanpa menghapus named volume. Kembali ke root dengan `cd ../..`, lalu `bash scripts/demo-online.sh stop` membersihkan container memori milik demo. Sesudah itu pilih **Stop codespace** pada halaman Codespaces; ini menghentikan compute. Menutup tab atau hanya down container belum menghentikan mesin cloud.
+
+![Codespace kelas stopped setelah alur Compose dan Scout](screenshots/compose/08_codespace_stopped.jpg)
+
+*Langkah: github.com/codespaces → menu … lingkungan kelas → Stop codespace. Fungsi: menghentikan compute. Bukti aktual: banner Codespace redesigned space adventure stopped. Storage tetap dihitung selama disimpan; Stop menyimpan lingkungan dan perubahan lokal. Sebelum Delete, simpan/push kode yang perlu dipertahankan dan backup data penting, karena Delete menghilangkan data lokal. Generated reports/.env tidak ikut dipush secara otomatis.*

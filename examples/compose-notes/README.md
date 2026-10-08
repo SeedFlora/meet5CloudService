@@ -27,6 +27,16 @@ Port host dapat diubah melalui `API_PORT` dan `WEB_PORT` dalam `.env` sebelum `u
 
 ## Observasi dan persistensi
 
+Panduan lengkap dengan screenshot, opsi port alternatif Codespaces, penjelasan command, dan kunci diskusi ada di [COMPOSE_DEMO.md](../../COMPOSE_DEMO.md).
+
+Pengujian dari folder ini menggunakan Python yang sudah ada di container API:
+
+```sh
+bash scripts/smoke.sh
+```
+
+Script menguji sembilan request melalui Nginx ke FastAPI dan PostgreSQL. Catatan sementara milik pengujian dibersihkan melalui `try/finally`; catatan handover yang dibuat dari frontend tetap tersedia. Semua pengecekan harus menampilkan PASS. Ini latihan formatif bersama tanpa penyerahan terpisah.
+
 ```sh
 curl http://localhost:13006/api/health
 curl http://localhost:13005/runtime

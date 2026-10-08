@@ -8,6 +8,9 @@
 - [Kode contoh teori Node.js 24: satu stage dan multi-stage](examples/theory-node/README.md)
 - [Demo Docker penuh di browser, dengan screenshot setiap tahap](DEMO_ONLINE.md)
 - [PDF panduan demo online](DEMO_ONLINE.pdf)
+- [Demo Compose: frontend + backend + PostgreSQL](COMPOSE_DEMO.md)
+- [PDF panduan Compose](COMPOSE_DEMO.pdf)
+- [Docker Scout opsional 5–10 menit: membaca temuan dan memilih tindakan](DEMO_ONLINE.md#11-docker-scout-opsional-510-menit)
 - [Kredit foto dan sumber perumpamaan pada PPT](slides/SUMBER_GAMBAR.md)
 
 Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Revisi 8 Oktober 2026 menambahkan perumpamaan restoran dengan foto berlisensi serta 14 screenshot alur demo Codespaces. Contoh FastAPI telah dibangun dan diuji end to end di Codespaces melalui Chrome; kedua contoh Node.js telah dibangun dan diuji lokal.
@@ -44,6 +47,58 @@ bash scripts/demo-online.sh stop
 ```
 
 Restart mengosongkan catatan memori pada contoh ini. Selanjutnya buka [Codespaces](https://github.com/codespaces), pilih menu **… → Stop codespace** pada lingkungan kelas. Compute berhenti; storage tetap dihitung selama lingkungan disimpan. Kuota gratis terbatas. [Panduan bergambar](DEMO_ONLINE.md) menjelaskan arti setiap command, hasil aktual, troubleshooting, serta jalur cadangan Killercoda.
+
+## Demo Compose: aplikasi dengan tiga layanan
+
+[Panduan Compose](COMPOSE_DEMO.md) menunjukkan frontend Nginx, backend FastAPI, dan database PostgreSQL bekerja bersama. Ini jembatan menuju Lab 06 dan proyek kelompok; API utama Lab 05 tetap menggunakan memori supaya perbedaan persistensi dapat diamati.
+
+Dari root repo, jalankan di terminal Linux Codespaces:
+
+```bash
+cd examples/compose-notes
+cp .env.example .env
+```
+
+Defaultnya API **13005** dan frontend **13006**. Screenshot online kelas memakai alternatif **13105/13106**, karena 13005 sudah dipakai proses lain yang tidak diubah. Untuk mengikuti alamat pada screenshot, setelah menyalin `.env` jalankan pada terminal Linux:
+
+```bash
+sed -i 's/^API_PORT=.*/API_PORT=13105/; s/^WEB_PORT=.*/WEB_PORT=13106/' .env
+```
+
+Lalu jalankan:
+
+```bash
+docker compose config --quiet
+docker compose up -d --build --wait
+docker compose ps
+bash scripts/smoke.sh
+```
+
+`bash scripts/smoke.sh` dari folder Compose melakukan sembilan pemeriksaan HTTP melalui web → API → PostgreSQL, termasuk create/read, input ditolak, ID tidak ditemukan, dan penghapusan hanya catatan uji sementara. Python berjalan di container API; host tidak perlu Python. [Panduan Compose](COMPOSE_DEMO.md#62-ulangi-pemeriksaan-dengan-smoke-script) menjelaskan setiap status, fungsi `request`, dan cleanup `try`/`finally`; pengujian aktual Codespaces menghasilkan 9/9 PASS.
+
+Buka port host dari `.env` melalui tab Ports: frontend **13006** dan API **13005** secara default, atau **13106/13105** jika memakai alternatif screenshot. Tambahkan `/docs` pada URL API. Database **tidak** memublikasikan port 5432 ke host. Frontend meneruskan request `/api/*` ke service `api`, dan backend terhubung ke service `db` menggunakan DNS network Compose. Setelah membuat catatan, `docker compose down` lalu `docker compose up -d --wait` menunjukkan data tetap ada karena disimpan di PostgreSQL pada named volume. `down` mempertahankan volume; jangan menambahkan `-v` pada alur demo.
+
+![Frontend Compose dengan catatan handover yang dibuat melalui browser](screenshots/compose/05_note_saved.jpg)
+
+*Screenshot aktual Codespaces 8 Oktober 2026, frontend port 13106. Catatan dummy dibuat dari form; [panduan Compose](COMPOSE_DEMO.md) menjelaskan command, jalur request, bukti database, persistensi, dan cleanup.*
+
+## Docker Scout: pemeriksaan sebelum rilis, opsional 5–10 menit
+
+Setelah build dan tes API berhasil, [alur Scout beserta kunci diskusi](DEMO_ONLINE.md#11-docker-scout-opsional-510-menit) memperlihatkan ringkasan image, rincian CVE, dan saran base image. Perumpamaannya: Scout mencocokkan daftar bahan software dengan advisory atau daftar recall; pengujian API tetap diperlukan setelah mengganti bahan.
+
+Dari root repo di terminal **Linux Codespaces**, siapkan CLI standalone dan login Docker sebelum presentasi. Jalankan `bash scripts/scout-demo.sh install` secara eksplisit, lalu `bash scripts/scout-demo.sh check`; instalasi yang sudah valid akan diperiksa dan dipakai ulang. `check` memeriksa binary, daemon, dan image, **belum membuktikan login atau akses layanan**. Sesudah image `cloud-notes-api:theory-online` dibuild:
+
+```bash
+bash scripts/scout-demo.sh quickview
+bash scripts/scout-demo.sh cves
+bash scripts/scout-demo.sh recommendations
+```
+
+Script memakai `local://cloud-notes-api:theory-online`; targetnya image API utama Lab 05, **bukan image API Compose**. Scout mengakses layanan online dan dapat memerlukan akun atau hak akses Docker. Demo ini tidak memerlukan push image atau pengaktifan monitoring registry. Hasil 0 atau filter kosong bukan jaminan aplikasi aman. Pilih perbaikan berdasarkan paket, versi, fix, serta konteks penggunaan; rebuild, uji HTTP, lalu scan ulang. Ini observasi formatif bersama, tanpa tugas atau nilai tambahan.
+
+Analisis baseline pada Codespaces **8 Oktober 2026**, Scout **1.26.0**, digest pendek **c9751e34cb88**, menghasilkan **0 critical, 4 high, 9 medium, 28 low** sebelum perbaikan dependency kelas. Rincian dan screenshot ada pada panduan; source terbaru serta advisory dapat menghasilkan angka berbeda. Health score/policy legacy yang masih tampil tidak dipakai sebagai persentase keamanan atau nilai kelas.
+
+Source terbaru memakai **FastAPI 0.142.4/Uvicorn 0.54.0**, dengan **Starlette 1.7.0** terverifikasi pada build kelas. Regresi lokal API/stats **21/21 PASS** dan helper HTTP/reset memori Codespaces PASS. Scan ulang tag **cloud-notes-api:scout-improved**, digest **39d3c08210c2**, memberi **0 critical, 1 high, 6 medium, 27 low**, 138 paket diindeks. [Panduan perbaikan bergambar](DEMO_ONLINE.md#115-perbaikan-yang-dijalankan-update--tes--scan-ulang) memuat command build/recreate/test/tag/scan dan kunci residual risk; hasil masih memerlukan review, bukan jaminan keamanan.
 
 ## Jalankan secara lokal
 

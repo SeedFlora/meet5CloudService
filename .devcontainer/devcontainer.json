@@ -1,0 +1,29 @@
+{
+  "name": "Cloud Services — Docker Theory Demo",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {}
+  },
+  "remoteUser": "vscode",
+  "forwardPorts": [8000, 13005, 13006],
+  "portsAttributes": {
+    "8000": {
+      "label": "Cloud Notes API / Swagger",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    },
+    "13005": {
+      "label": "Theory Node — basic image",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    },
+    "13006": {
+      "label": "Theory Node — multi-stage image",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  }
+}

@@ -6,8 +6,11 @@
 
 - [Pertemuan 05: Docker Core](slides/Teori_Pertemuan_05.pptx)
 - [Kode contoh teori Node.js 24: satu stage dan multi-stage](examples/theory-node/README.md)
+- [Demo Docker penuh di browser, dengan screenshot setiap tahap](DEMO_ONLINE.md)
+- [PDF panduan demo online](DEMO_ONLINE.pdf)
+- [Kredit foto dan sumber perumpamaan pada PPT](slides/SUMBER_GAMBAR.md)
 
-Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Revisi 8 Oktober 2026 memeriksa instruksi Dockerfile, cache, secrets, digest, dan perilaku healthcheck. Contoh FastAPI serta kedua contoh Node.js telah dibangun dan diuji lokal.
+Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Revisi 8 Oktober 2026 menambahkan perumpamaan restoran dengan foto berlisensi serta 14 screenshot alur demo Codespaces. Contoh FastAPI telah dibangun dan diuji end to end di Codespaces melalui Chrome; kedua contoh Node.js telah dibangun dan diuji lokal.
 
 <!-- lecture-materials:end -->
 
@@ -16,6 +19,31 @@ Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Re
 Repo template: [SeedFlora/meet5CloudService](https://github.com/SeedFlora/meet5CloudService). [Modul mahasiswa](MODUL_MAHASISWA.md) memuat screenshot, jawaban analisis, dan kunci lengkap tantangan `/stats`; [panduan Git](PANDUAN_GIT.md) dipakai dari root repo pribadi. Versi cetak: [PDF mahasiswa](MODUL_MAHASISWA.pdf). Slide kelas ada di `slides/`.
 
 **Capaian:** menulis Dockerfile multi-stage, mengecilkan build context dengan `.dockerignore`, memberi tag image, menjalankan image dengan environment variable, dan menguji REST API. Data lab ini sementara tersimpan di memori; Lab 06 menambahkan database.
+
+## Demo teori tanpa instalasi di laptop
+
+Buka repo ini, lalu **Code → Codespaces → Create codespace on main**. Gunakan mesin **2 core** dan tunggu terminal Linux siap. Docker dipasang di mesin cloud oleh konfigurasi repo; laptop hanya memerlukan browser, akun GitHub, internet, dan kuota Codespaces.
+
+Jalankan command satu per satu:
+
+```bash
+bash scripts/demo-online.sh check
+bash scripts/demo-online.sh build
+bash scripts/demo-online.sh start
+bash scripts/demo-online.sh status
+bash scripts/demo-online.sh test
+```
+
+Buka tab **Ports**, pilih **8000**, pertahankan **Private**, lalu **Open in Browser** dan tambahkan `/docs`. Swagger menyediakan tombol **Try it out → Execute** untuk GET `/health`, POST `/notes`, dan GET `/notes`. `localhost` pada terminal menunjuk mesin cloud; browser laptop memakai URL forwarded dari Ports.
+
+Setelah demo:
+
+```bash
+bash scripts/demo-online.sh test --restart
+bash scripts/demo-online.sh stop
+```
+
+Restart mengosongkan catatan memori pada contoh ini. Selanjutnya buka [Codespaces](https://github.com/codespaces), pilih menu **… → Stop codespace** pada lingkungan kelas. Compute berhenti; storage tetap dihitung selama lingkungan disimpan. Kuota gratis terbatas. [Panduan bergambar](DEMO_ONLINE.md) menjelaskan arti setiap command, hasil aktual, troubleshooting, serta jalur cadangan Killercoda.
 
 ## Jalankan secara lokal
 

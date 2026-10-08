@@ -59,9 +59,12 @@ require_owned() {
 }
 
 require_matching_port() {
-  local actual_mapping
+  local actual_mapping mapping_line matched=false
   actual_mapping="$(docker port "$CONTAINER_NAME" 8000/tcp 2>/dev/null || true)"
-  [[ "$actual_mapping" == *":${DEMO_PORT}"* ]] || fail "Port container berbeda dari DEMO_PORT=${DEMO_PORT}. Periksa docker port ${CONTAINER_NAME}."
+  while IFS= read -r mapping_line; do
+    if [[ "${mapping_line##*:}" == "$DEMO_PORT" ]]; then matched=true; fi
+  done <<< "$actual_mapping"
+  [[ "$matched" == true ]] || fail "Port container berbeda dari DEMO_PORT=${DEMO_PORT}. Periksa docker port ${CONTAINER_NAME}."
 }
 
 require_running() {

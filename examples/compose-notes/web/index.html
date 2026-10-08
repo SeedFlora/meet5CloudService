@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cloud Notes · Team Workspace</title>
+  <style>
+    :root{--ink:#172b3a;--muted:#647987;--navy:#163a4a;--teal:#117a77;--pale:#edf7f4;--line:#dae4e6;--cream:#f7f8f5;--orange:#df743e}
+    *{box-sizing:border-box}body{margin:0;background:var(--cream);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);line-height:1.5}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.6;cursor:wait}a{color:var(--teal)}
+    .topbar{background:var(--navy);color:white;padding:16px 6%;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:750;letter-spacing:.02em}.brand span{color:#83d4c9;margin-right:8px}.topbar small{color:#bfd1d8}
+    main{max-width:1220px;margin:0 auto;padding:38px 30px 45px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:750;color:var(--teal)}h1{font-size:42px;line-height:1.15;margin:10px 0 13px;letter-spacing:-.035em}h2{font-size:21px;margin:0 0 6px}.subtitle{margin:0;color:var(--muted);max-width:680px}.hero{display:flex;justify-content:space-between;gap:24px;align-items:center}.status{border:1px solid var(--line);padding:10px 15px;border-radius:30px;background:white;font-size:13px;white-space:nowrap}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#95a2aa;margin-right:8px}.dot.ok{background:#159377}.dot.error{background:#d94747}
+    .flow{display:flex;align-items:center;gap:14px;margin:28px 0}.flow-card{flex:1;background:white;border:1px solid var(--line);border-radius:12px;padding:16px 19px;display:flex;align-items:center;gap:13px}.number{background:var(--pale);color:var(--teal);border-radius:10px;font-size:16px;font-weight:750;padding:10px 12px}.flow-card b{font-size:14px;display:block}.flow-card small{color:var(--muted)}.arrow{color:#92a6ae;font-size:22px}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start}.panel{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden}.panel-head{padding:22px 24px;border-bottom:1px solid var(--line)}.panel-head p{font-size:13px;color:var(--muted);margin:0}.form{padding:24px}label{display:block;font-size:13px;font-weight:650;margin-bottom:7px}input,textarea{border:1px solid #bdcdd2;border-radius:8px;padding:11px 12px;width:100%;color:var(--ink);background:#fcfdfc}input:focus,textarea:focus{outline:2px solid #95d4ca;outline-offset:2px}textarea{min-height:130px;resize:vertical}.field{margin-bottom:18px}.primary{background:var(--teal);color:white;border:0;border-radius:8px;padding:12px 18px;width:100%;font-weight:650}.hint{font-size:12px;color:var(--muted);margin-top:14px}.summary{display:flex;justify-content:space-between;align-items:center}.count{display:inline-block;background:var(--pale);color:var(--teal);padding:3px 9px;border-radius:20px;font-size:12px;vertical-align:middle;margin-left:8px}.refresh{border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);padding:7px 12px;font-size:12px}.notes{padding:8px 24px 12px}.note{border-bottom:1px solid var(--line);padding:18px 0}.note:last-child{border-bottom:0}.note-heading{display:flex;justify-content:space-between;align-items:start;gap:16px}.note h3{font-size:16px;line-height:1.35;margin:0 0 8px}.note p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 12px;font-size:14px;color:#425d69}.note small{font-size:11px;color:var(--muted)}.delete{border:0;color:#b9533b;background:#fff4ee;font-size:11px;border-radius:6px;padding:5px 9px}.empty{text-align:center;padding:48px 16px;color:var(--muted);font-size:14px}.empty strong{display:block;color:var(--ink);font-size:17px;margin-bottom:5px}.message{margin-top:15px;font-size:13px;min-height:20px}.message.success{color:var(--teal)}.message.error{color:#b23a30}.footer{display:flex;justify-content:space-between;gap:20px;margin-top:23px;font-size:12px;color:var(--muted)}.storage{color:var(--teal)}
+    @media(max-width:800px){main{padding:28px 20px}.grid{grid-template-columns:1fr}.hero{display:block}.status{display:inline-block;margin-top:18px}h1{font-size:34px}.flow{gap:8px}.flow-card{padding:13px 10px;display:block}.number{display:none}.arrow{font-size:16px}.flow-card small{font-size:11px}.footer{display:block}.topbar small{display:none}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="brand"><span>▦</span>CLOUD NOTES</div><small>Team workspace / Cloud Services</small></header>
+  <main>
+    <section class="hero">
+      <div><div class="eyebrow">Docker Compose · Three-tier application</div><h1>Catatan kerja, satu tempat.</h1><p class="subtitle">Simpan handover, temuan troubleshooting, dan ide tim. Setiap catatan dikirim melalui API dan disimpan di PostgreSQL.</p></div>
+      <div class="status" role="status"><span class="dot" id="status-dot"></span><span id="status-label">Memeriksa koneksi…</span></div>
+    </section>
+    <section class="flow" aria-label="Alur aplikasi">
+      <div class="flow-card"><div class="number">01</div><div><b>Frontend</b><small>Browser + Nginx</small></div></div><span class="arrow" aria-hidden="true">→</span>
+      <div class="flow-card"><div class="number">02</div><div><b>Backend</b><small>FastAPI / validasi</small></div></div><span class="arrow" aria-hidden="true">→</span>
+      <div class="flow-card"><div class="number">03</div><div><b>Database</b><small>PostgreSQL / named volume</small></div></div>
+    </section>
+    <div class="grid">
+      <section class="panel"><div class="panel-head"><h2>Catatan baru</h2><p>Contoh: handover insiden atau hasil pengecekan.</p></div>
+        <form class="form" id="note-form">
+          <div class="field"><label for="title">Judul</label><input id="title" name="title" maxlength="120" placeholder="Handover: layanan sudah pulih" required></div>
+          <div class="field"><label for="content">Isi catatan</label><textarea id="content" name="content" maxlength="5000" placeholder="Apa yang terjadi, tindakan yang dilakukan, dan langkah berikutnya…" required></textarea></div>
+          <button class="primary" id="save-button" type="submit">Simpan ke database</button>
+          <p class="hint">Catatan tetap ada saat service dibuat ulang selama volume database dipertahankan.</p><div class="message" id="message" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+      <section class="panel"><div class="panel-head summary"><div><h2>Catatan tim <span id="note-count" class="count">0</span></h2><p>Data terbaru dari PostgreSQL.</p></div><button class="refresh" id="refresh-button">Muat ulang</button></div><div id="notes" class="notes" aria-live="polite"><div class="empty">Memuat catatan…</div></div></section>
+    </div>
+    <footer class="footer"><span id="runtime-label">Lingkungan: memuat…</span><span class="storage">Demo kelas · data contoh · tanpa autentikasi pengguna</span></footer>
+  </main>
+  <script>
+    const notesElement=document.getElementById('notes');
+    const messageElement=document.getElementById('message');
+    const titleInput=document.getElementById('title');
+    const contentInput=document.getElementById('content');
+    const saveButton=document.getElementById('save-button');
+    function message(text,isError=false){messageElement.textContent=text;messageElement.className='message '+(isError?'error':'success');}
+    async function request(path,options={}){
+      const response=await fetch('/api'+path,options);
+      if(!response.ok){let details;try{details=await response.json();}catch{}throw new Error(typeof details?.detail==='string'?details.detail:'Permintaan gagal (HTTP '+response.status+').');}
+      return response.status===204?null:response.json();
+    }
+    async function refresh(){
+      const rows=await request('/notes');
+      notesElement.replaceChildren();document.getElementById('note-count').textContent=rows.length;
+      if(!rows.length){const empty=document.createElement('div');empty.className='empty';const heading=document.createElement('strong');heading.textContent='Belum ada catatan.';empty.append(heading,document.createTextNode('Mulai dengan satu handover. Data akan tersimpan di database.'));notesElement.append(empty);return;}
+      for(const row of rows){
+        const article=document.createElement('article');article.className='note';
+        const header=document.createElement('div');header.className='note-heading';
+        const heading=document.createElement('h3');heading.textContent=row.title;
+        const remove=document.createElement('button');remove.type='button';remove.className='delete';remove.textContent='Hapus';remove.setAttribute('aria-label','Hapus catatan '+row.title);
+        remove.addEventListener('click',async()=>{remove.disabled=true;try{await request('/notes/'+row.id,{method:'DELETE'});await refresh();message('Catatan dihapus dari database.');}catch(error){message(error.message,true);remove.disabled=false;}});
+        header.append(heading,remove);const content=document.createElement('p');content.textContent=row.content;
+        const meta=document.createElement('small');meta.textContent='#'+row.id+' · '+new Date(row.created_at).toLocaleString('id-ID');article.append(header,content,meta);notesElement.append(article);
+      }
+    }
+    async function checkStatus(){
+      const dot=document.getElementById('status-dot'),label=document.getElementById('status-label');
+      try{const health=await request('/health');const runtime=await request('/runtime');if(health.status!=='ok')throw new Error('Dependency belum siap.');dot.className='dot ok';label.textContent='API + database terhubung';document.getElementById('runtime-label').textContent='Lingkungan: '+runtime.app_env+' · penyimpanan: '+runtime.storage;}
+      catch(error){dot.className='dot error';label.textContent='Koneksi belum siap';document.getElementById('runtime-label').textContent='Periksa status service api dan db.';}
+    }
+    document.getElementById('note-form').addEventListener('submit',async(event)=>{
+      event.preventDefault();const title=titleInput.value.trim(),content=contentInput.value.trim();if(!title||!content){message('Judul dan isi tidak boleh kosong.',true);return;}
+      saveButton.disabled=true;message('Menyimpan…');
+      try{const note=await request('/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,content})});titleInput.value='';contentInput.value='';await refresh();message('Catatan #'+note.id+' tersimpan di PostgreSQL.');}
+      catch(error){message(error.message,true);}finally{saveButton.disabled=false;await checkStatus();}
+    });
+    document.getElementById('refresh-button').addEventListener('click',async()=>{try{await refresh();await checkStatus();message('Daftar catatan diperbarui.');}catch(error){message(error.message,true);await checkStatus();}});
+    async function initialize(){await checkStatus();try{await refresh();}catch(error){notesElement.textContent='Catatan belum dapat dimuat. Periksa service api dan db, lalu klik Muat ulang.';message(error.message,true);}}
+    initialize();
+  </script>
+</body>
+</html>

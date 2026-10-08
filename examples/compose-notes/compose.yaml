@@ -1,0 +1,71 @@
+name: cloudlab05-compose
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cloudnotes}
+      POSTGRES_USER: ${POSTGRES_USER:-clouduser}
+      # Fake classroom credential. Replace outside this private classroom demo.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-classroom-demo-only-change-me}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    environment:
+      APP_ENV: ${APP_ENV:-classroom}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-cloudnotes}
+      DB_USER: ${POSTGRES_USER:-clouduser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-classroom-demo-only-change-me}
+    ports:
+      - "127.0.0.1:${API_PORT:-13005}:8000"
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 5s
+    restart: unless-stopped
+
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:${WEB_PORT:-13006}:80"
+    networks:
+      - frontend
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/__webhealth"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+networks:
+  frontend:
+  backend:
+    internal: true

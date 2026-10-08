@@ -13,12 +13,12 @@
       "protocol": "http"
     },
     "13005": {
-      "label": "Theory Node — basic image",
+      "label": "Compose Cloud Notes API",
       "onAutoForward": "notify",
       "protocol": "http"
     },
     "13006": {
-      "label": "Theory Node — multi-stage image",
+      "label": "Compose Cloud Notes frontend",
       "onAutoForward": "notify",
       "protocol": "http"
     }

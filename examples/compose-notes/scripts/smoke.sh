@@ -4,6 +4,7 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 docker compose exec -T api python - <<'PY'
 import json
+import os
 import urllib.error
 import urllib.request
 
@@ -29,7 +30,7 @@ def request(method, path, expected, payload=None):
 health = request("GET", "/health", 200)
 assert health["database"] == "postgres"
 runtime = request("GET", "/runtime", 200)
-assert runtime["uid"] == 10001 and runtime["storage"] == "postgres"
+assert os.getuid() == 10001 and runtime["storage"] == "postgres"
 request("GET", "/notes", 200)
 created_id = None
 try:

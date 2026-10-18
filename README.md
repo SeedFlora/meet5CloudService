@@ -1,6 +1,6 @@
 # Lab 05 - Docker Core di Windows PowerShell
 
-Praktik ini dijalankan pada **Docker Desktop di PC Windows**, melalui **PowerShell**. Gunakan [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md) sebagai urutan kelas. [Versi PDF modul](MODUL_MAHASISWA.pdf) mempunyai isi yang sama; slide lama bukan petunjuk menjalankan praktik lokal yang baru ini.
+Praktik ini dijalankan pada **Docker Desktop di PC Windows**, melalui **PowerShell**. Gunakan [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md) sebagai urutan kelas. [Versi PDF modul](MODUL_MAHASISWA.pdf) mempunyai isi yang sama; [slide praktik](slides/LAB05_Cloud_Notes_Bukti_Live.pptx) mengikuti urutan gabungan Core dan Compose yang memakai port lokal terbaru.
 
 **Kebijakan kelas:** latihan formatif, tanpa tugas, nilai, atau pengumpulan individu/per lab. Proyek besar tetap kelompok **3 orang**, dengan checkpoint presentasi minggu **7 (UTS)** dan hasil akhir minggu **14 (UAS)**. Bukti praktik boleh disimpan sebagai referensi proyek. Ketentuan penilaian resmi mengikuti RPS/LMS dan [brief proyek kelompok](PROYEK_KELOMPOK.md).
 
